@@ -48,7 +48,7 @@ python fid.py --inception [inception_file.pkl] [gan_checkpoint]
 ~~~
 You should expect FID score of about 10 for the CheXpert dataset, for this 48K iterations with batch size of 32 images is required.
 
-### Eigenvalue Search
+### Counterfactual generation using StyleSpace Eigenvectors
 1. Run Eigendecomposition on the trained model:
 ~~~
 python closed_form_factorization.py [gan_checkpoint] 
@@ -64,12 +64,10 @@ python att_find_eigenvectors.py --ckpt [gan_checkpoint] --classifier_ckpt [model
 
 Additionally, you can set the degree of change of the image latent along the eigenvector with the --degree argument.
 
-
-### Coordinate Search
-
-
-
-
+### Counterfactual generation using StyleSpace Coordinate Search
+This is based on the method and code of [1].
+1. First run att_find_calculate_styles.py to create intermediate files (parameters should be set in the source).
+2. Run Explaining_In_Style.ipynb in order to create the counterfactual using StyleSpace coordiantes.
 
 ### References
 [1] Lang, Oran, et al. "Explaining in Style: Training a GAN to explain a classifier in StyleSpace." Proceedings of the IEEE/CVF International Conference on Computer Vision. 2021.  
