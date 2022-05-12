@@ -49,11 +49,20 @@ python fid.py --inception [inception_file.pkl] [gan_checkpoint]
 You should expect FID score of about 10 for the CheXpert dataset, for this 48K iterations with batch size of 32 images is required.
 
 ### Eigenvalue Search
-1. Run eigendecomposition on the trained model:
+1. Run Eigendecomposition on the trained model:
 ~~~
 python closed_form_factorization.py [gan_checkpoint] 
 ~~~
+2. In order to generate counterfactuals for images created from noise with label "1" (sick):
+~~~
+python att_find_eigenvectors.py --ckpt [gan_checkpoint] --classifier_ckpt [model.pth --source noise --factor factor.pt --class_label 1 --cache_name noise_1 --n_sample 200
+~~~
+3. Similarly, for real images:
+~~~
+python att_find_eigenvectors.py --ckpt [gan_checkpoint] --classifier_ckpt [model.pth --source data --dataset_path [mdb_folder] --factor factor.pt --class_label 1 --cache_name data_1 --n_sample 200
+~~~
 
+Additionally, you can set the degree of change of the image latent along the eigenvector with the --degree argument.
 
 
 ### Coordinate Search

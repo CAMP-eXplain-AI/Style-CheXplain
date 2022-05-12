@@ -11,15 +11,19 @@ from torch.nn import functional as F
 import math
 
 
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+
 @torch.no_grad()
-def get_logits_latents(dataset, classifier, encoder, generator, args):
+def get_logits_latents_prob(dataset, classifier, encoder, generator, args):
     """
-    return two dictionaries in which the keys are the indices of images in dataset
+    return three dictionaries in which the keys are the indices of images in dataset
     logits: values are the classifier logits output for images
     latents: values are the encoder ouputs for images
+    probs: values are the classifier probabilitis for images
     """
 
-    logits, latents = dict(), dict()
+    logits, latents, prob = dict(), dict(), dict()
     indices = [idx for idx in range(args.n_sample)]
 
     if args.source == "data":
@@ -49,11 +53,15 @@ def get_logits_latents(dataset, classifier, encoder, generator, args):
             w = generator.get_latent(sample_z)
             latents[idx] = w
 
-    return logits, latents
+    for i in range(len(logits)):
+        prob[i] = torch.sigmoid(logits[i].squeeze(0))
+
+    return logits, latents, prob
 
 
 @torch.no_grad()
 def get_logits_diff(generator, classifier, eigvec, filterd_idx, logits, latents, args):
+
     logits_diff = dict()
 
     print("Checking %d styles..." % args.nof_eigenv)
@@ -112,19 +120,71 @@ def get_most_significant_eigens_and_direct(logits_means, args):
     return sort_significant_eigendirect
 
 
+@torch.no_grad()
+def get_prob_diff(generator, classifier, eigvec, filterd_idx, latents, prob, args):
+    prob_diff, prob_after = dict(), dict()
+
+    print("Checking %d styles..." % args.nof_eigenv)
+
+    for eigenvec_idx in range(args.nof_eigenv):
+        print(" Style %d" % eigenvec_idx)
+        direction = args.degree * eigvec[:, eigenvec_idx]
+
+        for idx in tqdm(filterd_idx):
+            changed_latent = torch.stack([latents[idx] + direction, latents[idx] - direction]).squeeze(1)
+            changed_latent.to(args.device)
+
+            changed_img, _ = generator([changed_latent], input_is_latent=True)
+            changed_logit = classifier(changed_img)
+            changed_prob = [torch.sigmoid(l) for l in changed_logit]
+
+            prob_diff_pos = changed_prob[0] - prob[idx].squeeze(0)
+            prob_diff_neg = changed_prob[1] - prob[idx].squeeze(0)
+
+            prob_diff[(idx, eigenvec_idx)] = [prob_diff_pos, prob_diff_neg]
+            prob_after[(idx, eigenvec_idx)] = changed_prob
+
+    return prob_diff, prob_after
+
+
+def get_prob_means(nof_eigenv, prob_diff, class_label, nof_images):
+    # calc means
+    means = {(eigen_idx, 'pos'): 0 for eigen_idx in range(nof_eigenv)}
+    means.update({(eigen_idx, 'neg'): 0 for eigen_idx in range(nof_eigenv)})
+
+    for (_, eigen_idx), diff in prob_diff.items():
+        diff_pos = diff[0]
+        means[(eigen_idx, 'pos')] += diff_pos[class_label].item()
+
+        diff_neg = diff[1]
+        means[(eigen_idx, 'neg')] += diff_neg[class_label].item()
+
+    for key in means.keys():
+        means[key] /= nof_images
+
+    # Get rid of inconsistent changes
+    for eigen_idx in range(nof_eigenv):
+        if means[(eigen_idx, 'pos')] > 0 and means[(eigen_idx, 'neg')] > 0:
+            means[(eigen_idx, 'pos')] = 0
+            means[(eigen_idx, 'neg')] = 0
+    return means
+
+
+def get_most_significant_eigens_and_direct_in_prob(prob_means, args):
+    sort_significant_eigendirect = sorted(prob_means.items(), key=lambda x: x[1], reverse=True)[
+                                   :args.nof_significant_eigenv]
+    sort_significant_eigendirect = dict(sort_significant_eigendirect)
+
+    print("EV\tDirection\tDiff")
+    for (eigen, sign) in sort_significant_eigendirect:
+        print("%d\t%s\t%.2f" % (eigen, sign, sort_significant_eigendirect[(eigen, sign)]))
+
+    return sort_significant_eigendirect
+
+
 def att_find(eigvec, generator, encoder, classifier, dataset, args):
-    """
 
-    :param eigvec:
-    :param generator:
-    :param encoder:
-    :param classifier:
-    :param dataset:
-    :param args:
-    :return:
-    """
-
-    logits, latents = get_logits_latents(dataset, classifier, encoder, generator, args)
+    logits, latents, prob = get_logits_latents_prob(dataset, classifier, encoder, generator, args)
 
     # keep only images with label != args.class_label.
     # FIXME- works only for two classes 
@@ -141,13 +201,17 @@ def att_find(eigvec, generator, encoder, classifier, dataset, args):
     print("%d images with label %d will be processed" % (max_num_images, other_label))
 
     # calculate diff between original and changed image logits for each eigenvector
-    logits_diff = get_logits_diff(generator, classifier, eigvec, filterd_idx, logits, latents, args)
-
-    # get mean logit diffs per eigenvector
-    logits_means = get_logits_means(args.nof_eigenv, logits_diff, args.class_label, len(filterd_idx))
-
-    # get top args.nof_significant_eigenv eigenvectors
-    most_significant_eigendirect = get_most_significant_eigens_and_direct(logits_means, args)
+    if args.prob_thre:
+        prob_diff, prob_after = get_prob_diff(generator, classifier, eigvec, filterd_idx, latents, prob, args)
+        prob_means = get_prob_means(args.nof_eigenv, prob_diff, args.class_label, len(filterd_idx))
+        most_significant_eigendirect = get_most_significant_eigens_and_direct_in_prob(prob_means, args)
+    
+    else:
+        logits_diff = get_logits_diff(generator, classifier, eigvec, filterd_idx, logits, latents, args)
+        # get mean logit diffs per eigenvector
+        logits_means = get_logits_means(args.nof_eigenv, logits_diff, args.class_label, len(filterd_idx))
+        # get top args.nof_significant_eigenv eigenvectors
+        most_significant_eigendirect = get_most_significant_eigens_and_direct(logits_means, args)
 
     result_explained_images = dict()
     filterd_image_idx = filterd_idx.copy()
@@ -155,12 +219,24 @@ def att_find(eigvec, generator, encoder, classifier, dataset, args):
     for (eigen_idx, eigen_direct), diff in most_significant_eigendirect.items():
         explained_image_idx = dict()
         sign_idx = 0 if (eigen_direct == 'pos') else 1
-        for image_idx in filterd_image_idx:
-            logits_change_diff = logits_diff[(image_idx, eigen_idx)]
-            logits_change = logits_change_diff[sign_idx][args.class_label]
+        if args.prob_thre:
+            for image_idx in filterd_image_idx:
+                prob_change_diff = prob_diff[(image_idx, eigen_idx)]
+                prob_change = prob_change_diff[sign_idx][args.class_label]
+                prob_after_change = prob_after[(image_idx, eigen_idx)][sign_idx][args.class_label]
 
-            if logits_change > args.change_threshold:
-                explained_image_idx[image_idx] = logits_change
+                prob_before_change = prob[image_idx][args.class_label]
+
+                if ((float(prob_before_change) < 0.5) and (float(prob_after_change) > 0.5)) or \
+                        ((float(prob_before_change) > 0.5) and (float(prob_after_change) < 0.5)):
+                    explained_image_idx[image_idx] = prob_change
+        else:
+            for image_idx in filterd_image_idx:
+                logits_change_diff = logits_diff[(image_idx, eigen_idx)]
+                logits_change = logits_change_diff[sign_idx][args.class_label]
+
+                if logits_change > args.change_threshold:
+                    explained_image_idx[image_idx] = logits_change
 
         if len(explained_image_idx) == max_num_images:
             print('Eigenvector %d:%s explained all images' % (eigen_idx, eigen_direct))
@@ -259,19 +335,6 @@ def get_discriminator_scores(d, img_before, img_after, batch_size, args):
     return d_res_before, d_res_after
 
 
-# Function to check
-# Log base 2
-def log2(x):
-    return (math.log10(x) /
-            math.log10(2))
-
-
-# Function to check
-# if x is power of 2
-def isPowerOfTwo(n):
-    return math.ceil(log2(n)) == math.floor(log2(n))
-
-
 @torch.no_grad()
 def save_changed_images(result_explained_images, generator, discriminator, eigvec, logits, latents,
                         num_images, dataset, args):
@@ -299,12 +362,6 @@ def save_changed_images(result_explained_images, generator, discriminator, eigve
             [latent + direction * change_direct],
             input_is_latent=True,
         )
-
-        '''
-        if isPowerOfTwo(latent.shape[0]):
-            d_res_before, d_res_after = get_discriminator_scores(d, img, img1, latent.shape[0], args)
-            print("Eigen %i D score before %.2f, D score after %.2f" % (eigen_idx, d_res_before, d_res_after))
-        '''
         
         # get class prob. before and after change
         set_logits = [logits.get(key) for key in image_idx_set]
@@ -334,6 +391,7 @@ def save_changed_images(result_explained_images, generator, discriminator, eigve
             nrow=num_images,
         )
 
+
 @torch.no_grad()
 def save_changed_images_for_survey(result_explained_images, generator, discriminator, eigvec, logits, latents,
                         num_images, dataset, args):
@@ -361,12 +419,6 @@ def save_changed_images_for_survey(result_explained_images, generator, discrimin
             [latent + direction * change_direct],
             input_is_latent=True,
         )
-
-        '''
-        if isPowerOfTwo(latent.shape[0]):
-            d_res_before, d_res_after = get_discriminator_scores(d, img, img1, latent.shape[0], args)
-            print("Eigen %i D score before %.2f, D score after %.2f" % (eigen_idx, d_res_before, d_res_after))
-        '''
         
         # get class prob. before and after change
         set_logits = [logits.get(key) for key in image_idx_set]
@@ -410,22 +462,23 @@ def save_changed_images_for_survey(result_explained_images, generator, discrimin
             scale_each=True,
             nrow=num_images,
         )
-        
 
-
-        individual_images_folder = os.path.join(args.output_path, args.cache_name + f"_images_after_change_EV_index-{str(eigen_idx)}_degree-{args.degree}")
+        individual_images_folder = os.path.join(args.output_path,
+                                                args.cache_name + f"_images_after_change_EV_index-{str(eigen_idx)}_degree-{args.degree}")
         if not os.path.exists(individual_images_folder):
             os.makedirs(individual_images_folder)
 
         for num, changed_img in enumerate(img1):
-            individual_img_file_name = os.path.join(individual_images_folder, args.cache_name + '_' + str(num) + f"_EV_index-{str(eigen_idx)}_degree-{args.degree}.png")
+            individual_img_file_name = os.path.join(individual_images_folder,
+                                                    args.cache_name + '_' + str(num) + f"_EV_index-{str(eigen_idx)}_degree-{args.degree}.png")
             utils.save_image(
                     changed_img,
                     individual_img_file_name,
                     normalize=True
                 )
         for num, original_img in enumerate(img):
-            original_individual_img_file_name = os.path.join(individual_images_folder, 'original_' + args.cache_name + '_' + str(num) + f"_EV_index-{str(eigen_idx)}_degree-{args.degree}.png")
+            original_individual_img_file_name = os.path.join(individual_images_folder,
+                                                             'original_' + args.cache_name + '_' + str(num) + f"_EV_index-{str(eigen_idx)}_degree-{args.degree}.png")
             utils.save_image(
                     original_img,
                     original_individual_img_file_name,
@@ -476,14 +529,23 @@ if __name__ == "__main__":
         "--n_sample", type=int, default=200, help="Number of images to generate, mandatory for noise generation"
     )
 
-    # save results
+    # output name
     parser.add_argument(
-        "--cache_name", type=str, default=None, help="Prefix to use for cache file names",
+        "--cache_name", type=str, default=None, help="Prefix to use for output file names",
     )
 
     # search param
     parser.add_argument(
+        "--prob_thre",
+        default=True,
+        action="store_true",
+        help="Use the probability threshold instead")
+    parser.add_argument(
         "--change_threshold", type=float, default=10, help="Threshold of logits change for finding explained images"
+    )
+
+    parser.add_argument(
+        "--change_prob_threshold", type=float, default=0.5, help="Threshold of probability change for finding explained images"
     )
 
     parser.add_argument(
@@ -554,7 +616,7 @@ if __name__ == "__main__":
     # save_explained_images(result_explained_images, dataset, num_saved_sample_images)
 
     num_saved_changed_images = 8
-    if args.save_for_survey == True:
+    if args.save_for_survey:
         save_changed_images_for_survey(result_explained_images, generator, discriminator, eigvec, logits, latents,
                         num_saved_changed_images, dataset, args)
     else:
