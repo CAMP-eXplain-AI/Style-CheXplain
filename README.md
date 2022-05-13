@@ -1,4 +1,4 @@
-# CheXplaining in Style: Counterfactual Explanations for Chest X-rays with StyleGAN
+# CheXplaining in Style: Counterfactual Explanations for Chest X-rays
 
 This repository is the official implementation of our paper.
 
