@@ -16,10 +16,10 @@ The StyleGAN2 implementation is based on the code by [rosinality](https://github
 CheXpert dataset processing and classifier is based on the code from the [CheXplain-Dissection](https://github.com/CAMP-eXplain-AI/CheXplain-Dissection) [2]
 
 ### Requirements
-1. We used Python 3.6.
-2. [Install](https://pytorch.org/get-started/locally/) pytorch and torchvision.
-3. Additionally:
+1. Python 3.7.11
+2. Additionally:
 ~~~
+pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html
 pip install lmdb ninja wandb tqdm
 pip install git+https://github.com/S-aiueo32/lpips-pytorch.git
 ~~~
