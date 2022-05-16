@@ -12,8 +12,9 @@ This repo is also a reimplementation of the [Explaining in Style](https://arxiv.
 
 ### Acknowledgements
 
-The StyleGAN2 implementation is based on the code by [rosinality](https://github.com/rosinality/stylegan2-pytorch/) and our 
-CheXpert dataset processing and classifier is based on the code from the [CheXplain-Dissection](https://github.com/CAMP-eXplain-AI/CheXplain-Dissection) [2]
+The StyleGAN2 implementation is based on the code by [rosinality](https://github.com/rosinality/stylegan2-pytorch/). 
+The CheXpert dataset processing and classifier is based on the code from the [CheXplain-Dissection](https://github.com/CAMP-eXplain-AI/CheXplain-Dissection) [2]. 
+The coordinate search notebook is taken from [Explaing in Style](https://github.com/google/explaining-in-style) [1] paper repo. 
 
 ### Requirements
 1. Python 3.7.11
