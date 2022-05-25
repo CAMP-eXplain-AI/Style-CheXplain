@@ -5,7 +5,7 @@ This repository is the official implementation of our paper.
 Our GAN-based method creates counterfactual explanations for chest X-rays, by manipulating specific latent directions in
 their latent space. 
 
-This repo is also a reimplementation of the [Explaining in Style](https://arxiv.org/abs/2104.13369) paper by Lang et. al. [1]
+This repo is also a Pytorch version reimplementation of the [Explaining in Style](https://arxiv.org/abs/2104.13369) paper by Lang et. al. [1]
 
 <img alt="Alt Text" src="resources/cardio.gif" width="" height="300"/>
 <img alt="Alt Text" src="resources/pleural_effusion.gif" width="" height="300"/>
@@ -14,7 +14,7 @@ This repo is also a reimplementation of the [Explaining in Style](https://arxiv.
 
 The StyleGAN2 implementation is based on the code by [rosinality](https://github.com/rosinality/stylegan2-pytorch/). 
 The CheXpert dataset processing and classifier is based on the code from the [CheXplain-Dissection](https://github.com/CAMP-eXplain-AI/CheXplain-Dissection) [2]. 
-The coordinate search notebook is taken from [Explaing in Style](https://github.com/google/explaining-in-style) [1] paper repo. 
+The coordinate search notebook is based on [Explaing in Style](https://github.com/google/explaining-in-style) [1] paper repo. 
 
 ### Requirements
 1. Python 3.7.11
