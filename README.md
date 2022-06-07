@@ -1,6 +1,6 @@
 # CheXplaining in Style: Counterfactual Explanations for Chest X-rays
 
-This repository is the official implementation of our poster for XAI4CV workshop at CVPR 2022.
+This repository is the official implementation of our poster for [XAI4CV workshop](https://xai4cv.github.io/workshop) at CVPR 2022.
 
 Our GAN-based method creates counterfactual explanations for chest X-rays, by manipulating specific latent directions in
 their latent space. 
