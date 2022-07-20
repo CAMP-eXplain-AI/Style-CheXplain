@@ -1,6 +1,6 @@
 # CheXplaining in Style: Counterfactual Explanations for Chest X-rays
 
-This repository is the official implementation of our [poster](https://github.com/CAMP-eXplain-AI/Style-CheXplain/blob/main/resources/Poster-%20CheXplaining%20in%20Style.pdf) for [XAI4CV workshop](https://xai4cv.github.io/workshop) at CVPR 2022.
+This repository is the official implementation of our [paper](https://arxiv.org/abs/2207.07553) accepted to the ICML 2022 Interpretable Machine Learning in Healthcare (IMLH) Workshop and also featured as a [poster](https://github.com/CAMP-eXplain-AI/Style-CheXplain/blob/main/resources/Poster-%20CheXplaining%20in%20Style.pdf) in the [XAI4CV workshop](https://xai4cv.github.io/workshop) at CVPR 2022.
 
 Our GAN-based method creates counterfactual explanations for chest X-rays, by manipulating specific latent directions in
 their latent space. 
@@ -9,12 +9,6 @@ This repo is also a Pytorch version reimplementation of the [Explaining in Style
 
 <img alt="Alt Text" src="resources/cardio.gif" width="" height="300"/>
 <img alt="Alt Text" src="resources/pleural_effusion.gif" width="" height="300"/>
-
-### Acknowledgements
-
-The StyleGAN2 implementation is based on the code by [rosinality](https://github.com/rosinality/stylegan2-pytorch/). 
-The CheXpert dataset processing and classifier is based on the code from the [CheXplain-Dissection](https://github.com/CAMP-eXplain-AI/CheXplain-Dissection) [2]. 
-The coordinate search notebook is based on [Explaing in Style](https://github.com/google/explaining-in-style) [1] paper repo. 
 
 ### Requirements
 1. Python 3.7.11
@@ -69,6 +63,23 @@ Additionally, you can set the degree of change of the image latent along the eig
 This is based on the method and code of [1].
 1. First run att_find_calculate_styles.py to create intermediate files (parameters should be set in the source).
 2. Run Explaining_In_Style.ipynb in order to create the counterfactual using StyleSpace coordiantes.
+
+### Citation
+If you find our work usefull, please consider citing it:
+~~~
+@article{atad2022chexplaining,
+      title={CheXplaining in Style: Counterfactual Explanations for Chest X-rays using StyleGAN},
+      author={Atad, Matan and Dmytrenko, Vitalii and Li, Yitong and Zhang, Xinyue and Keicher, Matthias and Kirschke, Jan and Wiestler, Bene and Khakzar, Ashkan and Navab, Nassir},
+      journal={arXiv arXiv:2207.07553},
+      year={2022}
+}
+~~~
+
+### Acknowledgements
+
+The StyleGAN2 implementation is based on the code by [rosinality](https://github.com/rosinality/stylegan2-pytorch/). 
+The CheXpert dataset processing and classifier is based on the code from the [CheXplain-Dissection](https://github.com/CAMP-eXplain-AI/CheXplain-Dissection) [2]. 
+The coordinate search notebook is based on [Explaing in Style](https://github.com/google/explaining-in-style) [1] paper repo. 
 
 ### References
 [1] Lang, Oran, et al. "Explaining in Style: Training a GAN to explain a classifier in StyleSpace." Proceedings of the IEEE/CVF International Conference on Computer Vision. 2021.  
