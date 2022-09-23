@@ -43,6 +43,23 @@ python fid.py --inception [inception_file.pkl] [gan_checkpoint]
 ~~~
 You should expect FID score of about 10 for the CheXpert dataset, for this 48K iterations with batch size of 32 images is required.
 
+### Pretrained Models
+We share pretrained classifiers and StyleEx checkpoints for three pathologies:
+
+## Classifiers
+1. [Atelectasis](https://drive.google.com/file/d/1RC88C6RJW4eJcNXl9NcMRQto1Q8wFZWI/view?usp=sharing)
+2. [Cardiomegaly](https://drive.google.com/file/d/17Nhq-2qufxnDopW3-Hk6ow2hDH7mWzhE/view?usp=sharing)
+3. [Pleural Effusion](https://drive.google.com/file/d/1-sEB9m8DtAgPRh32IS55Co8oZ1zDqTBC/view?usp=sharing)
+
+## StyleEX GANs
+| **Pathology**    | **Batch Size** | **Iterations** | **FID** | **Checkpoint** |
+|------------------|----------------|----------------|---------|----------------|
+| Atelectasis      | 32             | 39500          | 11.59   | [link](https://drive.google.com/file/d/1JfcJ01jMU8Vsb9ciMKR8Eh9rJ4mrUWa3/view?usp=sharing)           |
+| Cardiomegaly     | 32             | 39500          | 12.07   | [link](https://drive.google.com/file/d/1EX8m8vCbUA7EQ6ZPv3DvznEWlpbVzqPv/view?usp=sharing)           |
+| Pleural Effusion | 32             | 48000          | 9.89    | [link](https://drive.google.com/file/d/1k0GRol4bzLGdfWDKPAGrznbBQ7ZkPXES/view?usp=sharing)           |
+
+
+
 ### Counterfactual generation using StyleSpace Eigenvectors
 1. Run Eigendecomposition on the trained model:
 ~~~
