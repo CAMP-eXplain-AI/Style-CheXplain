@@ -48,9 +48,9 @@ We share pretrained classifiers and StyleEx checkpoints for three pathologies:
 
 | **Pathology**    | **Batch Size** | **Iterations** | **FID** | **Checkpoint** | **Classifier Checkpoint** |
 |------------------|----------------|----------------|---------|----------------|---------------------------|
-| Atelectasis      | 32             | 39500          | 11.59   | [link](https://drive.google.com/file/d/1JfcJ01jMU8Vsb9ciMKR8Eh9rJ4mrUWa3/view?usp=sharing)           | [link](https://drive.google.com/file/d/1RC88C6RJW4eJcNXl9NcMRQto1Q8wFZWI/view?usp=sharing)                     |
-| Cardiomegaly     | 32             | 39500          | 12.07   | [link](https://drive.google.com/file/d/1EX8m8vCbUA7EQ6ZPv3DvznEWlpbVzqPv/view?usp=sharing)           | [link](https://drive.google.com/file/d/17Nhq-2qufxnDopW3-Hk6ow2hDH7mWzhE/view?usp=sharing)                     |
-| Pleural Effusion | 32             | 48000          | 9.89    | [link](https://drive.google.com/file/d/1k0GRol4bzLGdfWDKPAGrznbBQ7ZkPXES/view?usp=sharing)           | [link](https://drive.google.com/file/d/1-sEB9m8DtAgPRh32IS55Co8oZ1zDqTBC/view?usp=sharing)                     |
+| Atelectasis      | 32             | 39500          | 11.59   | [link](https://drive.google.com/file/d/1RC88C6RJW4eJcNXl9NcMRQto1Q8wFZWI/view?usp=drive_link)           | [link](https://drive.google.com/file/d/1RC88C6RJW4eJcNXl9NcMRQto1Q8wFZWI/view?usp=sharing)                     |
+| Cardiomegaly     | 32             | 39500          | 12.07   | [link](https://drive.google.com/file/d/17Nhq-2qufxnDopW3-Hk6ow2hDH7mWzhE/view?usp=drive_link)           | [link](https://drive.google.com/file/d/17Nhq-2qufxnDopW3-Hk6ow2hDH7mWzhE/view?usp=sharing)                     |
+| Pleural Effusion | 32             | 48000          | 9.89    | [link](https://drive.google.com/file/d/1-sEB9m8DtAgPRh32IS55Co8oZ1zDqTBC/view?usp=drive_link)           | [link](https://drive.google.com/file/d/1-sEB9m8DtAgPRh32IS55Co8oZ1zDqTBC/view?usp=sharing)                     |
 
 
 
